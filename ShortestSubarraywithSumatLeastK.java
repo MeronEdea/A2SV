@@ -28,24 +28,35 @@ Constraints:
 
 class Solution {
     public int shortestSubarray(int[] nums, int k) {
-        int len = nums.length, left = 0;
-    int res = len + 1;
-    int sum = 0;
-    for (int i = 0; i < len; i++) {
-        sum += nums[i];
-        int t = left, sumT = sum;
-        while(t < i){
-            sumT -= nums[t++];
-            if(sumT >= k){
-                sum = sumT;
-                left = t;
+        Deque<Info> queue = new LinkedList<>();
+        long currSum = 0;
+        int ans = Integer.MAX_VALUE;
+        for(int i=0; i<nums.length; ++i){
+            currSum += nums[i];
+            if(currSum >= k)
+                ans  = Math.min(ans, i+1);
+            
+            while(!queue.isEmpty() && currSum - queue.peekFirst().sum >= k){
+                Info info = queue.pollFirst();
+                ans = Math.min(ans, i - info.idx );
             }
+            
+            while(!queue.isEmpty() && queue.peekLast().sum > currSum){
+                queue.pollLast();
+            }
+            
+            queue.add(new Info(currSum, i));
         }
-        while (sum >= k) {
-            res = Math.min(res, i - left + 1);
-            sum -= nums[left++];
-        }
+        
+        return ans == Integer.MAX_VALUE ? -1 : ans;
     }
-    return res == len + 1 ? -1 : res;
+}
+class Info{
+    long sum;
+    int idx;
+    
+    public Info(long sum, int idx){
+        this.sum = sum;
+        this.idx = idx;
     }
 }
